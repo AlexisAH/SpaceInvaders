@@ -27,20 +27,35 @@ playerX = 370
 playerY = 480
 playerX_change = 0
 
-# Enemy
+# Enemy 1
 enemyImg = []
 enemyX = []
 enemyY = []
 enemyX_change = []
 enemyY_change = []
-num_of_enemies = 6
+num_of_enemies = 7
+
+# Enemy 2
+enemyImg2 = []
+enemyX2 = []
+enemyY2 = []
+enemyX_change2 = []
+enemyY_change2 = []
+num_of_enemies2 = 4
 
 for i in range(num_of_enemies):
     enemyImg.append(pygame.image.load('enemy.png'))
     enemyX.append(random.randint(0, 735))
     enemyY.append(random.randint(50, 150))
-    enemyX_change.append(1)
+    enemyX_change.append(0.3)
     enemyY_change.append(40)
+
+for i in range(num_of_enemies2):
+    enemyImg2.append(pygame.image.load('enemy2.png'))
+    enemyX2.append(random.randint(0, 735))
+    enemyY2.append(random.randint(50, 150))
+    enemyX_change2.append(1)
+    enemyY_change2.append(40)
 
 # Bullet
 # Ready - You can't see the bullet on the screen
@@ -80,6 +95,8 @@ def player(x, y):
 def enemy(x, y, i):
     screen.blit(enemyImg[i], (x, y))
 
+def enemy2(x, y, i):
+    screen.blit(enemyImg2[i], (x, y))
 
 def fire_bullet(x, y):
     global bullet_state
@@ -144,10 +161,10 @@ while running:
 
         enemyX[i] += enemyX_change[i]
         if enemyX[i] <= 0:
-            enemyX_change[i] = 1
+            enemyX_change[i] = 0.3
             enemyY[i] += enemyY_change[i]
         elif enemyX[i] >= 736:
-            enemyX_change[i] = -1
+            enemyX_change[i] = -0.3
             enemyY[i] += enemyY_change[i]
 
         # Collision
@@ -157,11 +174,42 @@ while running:
             explosion_Sound.play()
             bulletY = 480
             bullet_state = "ready"
-            score_value += 1
+            score_value += 10
             enemyX[i] = random.randint(0, 736)
             enemyY[i] = random.randint(50, 150)
 
         enemy(enemyX[i], enemyY[i], i)
+
+    #start Enemigo con movimiento rapido
+    for i in range(num_of_enemies2):
+        # Game Over
+        if enemyY2[i] > 440:
+            for j in range(num_of_enemies2):
+                enemyY2[j] = 2000
+            game_over_text()
+            break
+
+        enemyX2[i] += enemyX_change2[i]
+        if enemyX2[i] <= 0:
+            enemyX_change2[i] = 1
+            enemyY2[i] += enemyY_change2[i]
+        elif enemyX2[i] >= 736:
+            enemyX_change2[i] = -1
+            enemyY2[i] += enemyY_change2[i]
+
+        # Collision
+        collision = isCollision(enemyX2[i], enemyY2[i], bulletX, bulletY)
+        if collision:
+            explosion_Sound = mixer.Sound('explosion.wav')
+            explosion_Sound.play()
+            bulletY = 480
+            bullet_state = "ready"
+            score_value += 20
+            enemyX2[i] = random.randint(0, 736)
+            enemyY2[i] = random.randint(50, 150)
+
+        enemy2(enemyX2[i], enemyY2[i], i)
+    #end
 
     # Bullet movement
     if bulletY <= 0:
