@@ -6,7 +6,6 @@ from pygame import mixer
 # Initialize the pygame
 pygame.init()
 
-
 # create the screen
 screen = pygame.display.set_mode((800, 600))
 
@@ -35,12 +34,11 @@ enemyY = []
 enemyX_change = []
 enemyY_change = []
 
-num_of_enemies = 8 #numero de enemigos en el primer nivel
+num_of_enemies = 8  # numero de enemigos en el primer nivel
 enemy_destroyed = [False] * num_of_enemies  # registro de enemigos destruidos
 nivel_actual = 1
 nivel_scores = [10, 20, 30, 40]
 enemy_velocidades = [0.4, 0.6, 0.9, 1.2]
-
 
 for i in range(num_of_enemies):
     enemyImg.append(pygame.image.load('enemy.png'))
@@ -48,7 +46,6 @@ for i in range(num_of_enemies):
     enemyY.append(random.randint(50, 150))
     enemyX_change.append(0.4)
     enemyY_change.append(40)
-
 
 # Bullet
 # Ready - You can't see the bullet on the screen
@@ -59,6 +56,13 @@ bulletY = 480
 bulletX_change = 0
 bulletY_change = 10
 bullet_state = "ready"
+
+# Power-up
+powerupImg = pygame.image.load('powerup.png')
+powerupX = random.randint(0, 735)
+powerupY = -100
+powerupY_change = 1
+powerup_state = "ready"
 
 # Score
 score_value = 0
@@ -71,6 +75,48 @@ textY = 10
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 
 
+# Power-up function
+def powerup(x, y):
+    screen.blit(powerupImg, (x, y))
+
+
+# Bullet
+bulletImg = pygame.image.load('bullet.png')
+bulletY_change = 10
+
+
+def fire_bullet(x, y):
+    global bullet_state
+    bullet_state = "fire"
+    screen.blit(bulletImg, (x + 16, y + 10))
+
+
+bullet_state = "ready"
+bulletX = 0
+bulletY = 480
+
+# Score
+score_value = 0
+font = pygame.font.Font('freesansbold.ttf', 32)
+
+textX = 10
+textY = 10
+
+# Game Over text
+over_font = pygame.font.Font('freesansbold.ttf', 64)
+
+
+def show_score(x, y):
+    score = font.render("Score: " + str(score_value), True, (0, 255, 0))
+    screen.blit(score, (x, y))
+
+
+def game_over_text():
+    over_text = over_font.render("GAME OVER", True, (0, 255, 0))
+    screen.blit(over_text, (200, 250))
+
+
+# ______________________________
 def show_score(x, y):
     score = font.render("Score :" + str(score_value), True, (0, 255, 0))
     screen.blit(score, (x, y))
@@ -112,7 +158,7 @@ while running:
     # Background Image
     screen.blit(background, (0, 0))
 
-    #verifica si todos los enemigos han sido destruidos
+    # verifica si todos los enemigos han sido destruidos
     if all(enemy_destroyed):
         nivel_actual += 1
         if nivel_actual > 4:
@@ -126,11 +172,11 @@ while running:
             level_text = over_font.render("Nivel 2", True, (0, 255, 0))
             screen.blit(level_text, (300, 250))
             pygame.display.update()
-            pygame.time.delay(2000)  #2 segundos antes de continuar
+            pygame.time.delay(2000)  # 2 segundos antes de continuar
 
-            #restablece los enemigos con nuevas imágenes y velocidades
+            # restablece los enemigos con nuevas imágenes y velocidades
             num_of_enemies = 9
-            enemy_destroyed = [False] * num_of_enemies  #reinicia el seguimiento de enemigos destruidos
+            enemy_destroyed = [False] * num_of_enemies  # reinicia el seguimiento de enemigos destruidos
             enemyImg = []
             enemyX = []
             enemyY = []
@@ -148,9 +194,9 @@ while running:
             level_text = over_font.render("Nivel 3", True, (0, 255, 0))
             screen.blit(level_text, (300, 250))
             pygame.display.update()
-            pygame.time.delay(2000)  #2 segundos antes de continuar
+            pygame.time.delay(2000)  # 2 segundos antes de continuar
 
-            #restablece los enemigos con nuevas imágenes y velocidades
+            # restablece los enemigos con nuevas imágenes y velocidades
             num_of_enemies = 10
             enemy_destroyed = [False] * num_of_enemies  # Reinicia el seguimiento de enemigos destruidos
             enemyImg = []
@@ -169,7 +215,7 @@ while running:
             level_text = over_font.render("Nivel 4", True, (0, 255, 0))
             screen.blit(level_text, (300, 250))
             pygame.display.update()
-            pygame.time.delay(2000)  #2 segundos antes de continuar
+            pygame.time.delay(2000)  # 2 segundos antes de continuar
 
             # restablece los enemigos con nuevas imágenes y velocidades
             num_of_enemies = 11
@@ -185,7 +231,6 @@ while running:
                 enemyX.append(random.randint(0, 735))
                 enemyY.append(random.randint(50, 150))
                 enemyX_change.append(1.2)
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -216,7 +261,7 @@ while running:
     elif playerX >= 736:
         playerX = 736
 
-    #Enemy movement
+    # Enemy movement
     for i in range(num_of_enemies):
         # Game Over
         if enemyY[i] > 440:
@@ -232,10 +277,10 @@ while running:
         if not enemy_destroyed[i]:
             enemyX[i] += enemyX_change[i]
             if enemyX[i] <= 0:
-                enemyX_change[i] = enemy_velocidades[nivel_actual -1]
+                enemyX_change[i] = enemy_velocidades[nivel_actual - 1]
                 enemyY[i] += 40
             elif enemyX[i] >= 736:
-                enemyX_change[i] = -enemy_velocidades[nivel_actual -1]
+                enemyX_change[i] = -enemy_velocidades[nivel_actual - 1]
                 enemyY[i] += 40
 
             # Collision
@@ -247,8 +292,8 @@ while running:
                 bullet_state = "ready"
                 score_value += nivel_scores[nivel_actual - 1]
                 enemy_destroyed[i] = True
-                #enemyX[i] = random.randint(0, 736)
-                #enemyY[i] = random.randint(50, 150)
+                # enemyX[i] = random.randint(0, 736)
+                # enemyY[i] = random.randint(50, 150)
 
             if playerLives == 3:
                 muerte_3 = screen.blit(pygame.transform.scale(playerImg, (25, 25)), (510, 15))
@@ -261,8 +306,27 @@ while running:
                 muerte_1 = screen.blit(pygame.transform.scale(playerImg, (25, 25)), (440, 15))
 
             enemy(enemyX[i], enemyY[i], i)
-    #end
+    # end
 
+    # Power-up movement
+    if powerup_state == "ready":
+        powerupY += powerupY_change
+    # Check if power-up collides with the player
+    powerup_collision = pygame.Rect(playerX, playerY, 32, 32).colliderect(pygame.Rect(powerupX, powerupY, 32, 32))
+    if powerup_collision:
+        powerup_state = "active"
+        bulletImg = pygame.image.load('powerful_bullet.png')
+        bulletY_change = 20
+
+    # Check if power-up goes off the screen
+    if powerupY > 600:
+        powerup_state = "ready"
+        powerupX = random.randint(0, 735)
+        powerupY = -100
+
+    # Display the power-up
+    if powerup_state == "active":
+        powerup(powerupX, powerupY)
 
     # Bullet movement
     if bulletY <= 0:
