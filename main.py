@@ -60,9 +60,11 @@ bullet_state = "ready"
 # Power-up
 powerupImg = pygame.image.load('powerup.png')
 powerupX = random.randint(0, 735)
-powerupY = -100
+powerupY = 0
 powerupY_change = 1
-powerup_state = "ready"
+powerup_state = "falling"
+powerup_timer = 1
+bullet_change_duration = 5  # Duración del cambio de bala en segundos
 
 # Score
 score_value = 0
@@ -74,22 +76,9 @@ textY = 10
 # Game Over text
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 
-
-# Power-up function
-def powerup(x, y):
-    screen.blit(powerupImg, (x, y))
-
-
 # Bullet
 bulletImg = pygame.image.load('bullet.png')
 bulletY_change = 10
-
-
-def fire_bullet(x, y):
-    global bullet_state
-    bullet_state = "fire"
-    screen.blit(bulletImg, (x + 16, y + 10))
-
 
 bullet_state = "ready"
 bulletX = 0
@@ -105,22 +94,23 @@ textY = 10
 # Game Over text
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 
+# Power-up function
+#def powerup(x, y):
+ #   screen.blit(powerupImg, (x, y))
+def collect_powerup(player_x, player_y, powerup_x, powerup_y):
+    distance = math.sqrt((math.pow(player_x - powerup_x, 2)) + (math.pow(player_y - powerup_y, 2)))
+    if distance < 27:
+        return True
+    else:
+        return False
+
+def show_powerup_timer(x, y):
+    timer_text = font.render("Power-up: " + str(bullet_change_duration - powerup_timer) + "s", True, (0, 255, 0))
+    screen.blit(timer_text, (x, y))
 
 def show_score(x, y):
     score = font.render("Score: " + str(score_value), True, (0, 255, 0))
     screen.blit(score, (x, y))
-
-
-def game_over_text():
-    over_text = over_font.render("GAME OVER", True, (0, 255, 0))
-    screen.blit(over_text, (200, 250))
-
-
-# ______________________________
-def show_score(x, y):
-    score = font.render("Score :" + str(score_value), True, (0, 255, 0))
-    screen.blit(score, (x, y))
-
 
 def game_over_text():
     over_text = over_font.render("GAME OVER", True, (0, 255, 0))
@@ -147,7 +137,6 @@ def isCollision(enemyX, enemyY, bulletX, bulletY):
         return True
     else:
         return False
-
 
 # Game Loop
 running = True
@@ -309,24 +298,31 @@ while running:
     # end
 
     # Power-up movement
-    if powerup_state == "ready":
+    if powerupY < 600:
         powerupY += powerupY_change
-    # Check if power-up collides with the player
-    powerup_collision = pygame.Rect(playerX, playerY, 32, 32).colliderect(pygame.Rect(powerupX, powerupY, 32, 32))
-    if powerup_collision:
-        powerup_state = "active"
-        bulletImg = pygame.image.load('powerful_bullet.png')
-        bulletY_change = 20
-
-    # Check if power-up goes off the screen
-    if powerupY > 600:
-        powerup_state = "ready"
+        screen.blit(powerupImg, (powerupX, powerupY))
+    else:
         powerupX = random.randint(0, 735)
-        powerupY = -100
+        powerupY = 0
 
-    # Display the power-up
-    if powerup_state == "active":
-        powerup(powerupX, powerupY)
+    # Collision with power-up
+    powerup_collected = collect_powerup(playerX, playerY, powerupX, powerupY)
+    if powerup_collected:
+        # Reset the power-up
+        powerupX = random.randint(0, 735)
+        powerupY = 0
+        # Change the player's bullet
+        bulletImg = pygame.image.load('powerful_bullet.png')
+        # Reset the power-up timer
+        powerup_timer = 0
+
+    # Update the power-up timer
+    if bulletImg == pygame.image.load('powerful_bullet.png'):
+        powerup_timer += 1
+
+    # Check if it's time to revert to the normal bullet
+    if powerup_timer >= bullet_change_duration * 60:  # Convert seconds to frames (assuming 60 FPS)
+        bulletImg = pygame.image.load('bullet.png')
 
     # Bullet movement
     if bulletY <= 0:
@@ -338,4 +334,5 @@ while running:
 
     player(playerX, playerY)
     show_score(textX, textY)
+    show_powerup_timer(textX, textY + 40)  # Display the power-up timer
     pygame.display.update()
